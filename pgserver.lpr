@@ -43,6 +43,7 @@ begin
   RequireDerivedFormResource :=True;
   if not IsAnotherInstance then
   begin
+  Application.Title :='PG Server GUI';
   Application.Scaled :=True;
     Application.Initialize;
     Application.CreateForm(TMainForm, MainForm);

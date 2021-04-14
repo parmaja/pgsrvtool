@@ -67,6 +67,8 @@ type
     ShowTray: Boolean;
     procedure CheckServer;
     procedure ConsoleTerminated(Sender: TObject);
+    procedure ShowApp;
+    procedure HideApp;
     procedure ForceForegroundWindow;
     procedure Log(S: String; Kind: TmnLogKind = lgLog);
     procedure Launch(AddIt: Boolean; vMessage, vExecutable, vParameters, vPassword: String; vExecuteObject: TExecuteObject = nil; IgnoreError: Boolean = False);
@@ -150,11 +152,7 @@ begin
   LoadIni;
   TrayIcon.Icon.Assign(Application.Icon);
   if StartMinimized then
-  begin
-    //WindowState := wsMinimized;
-    Visible := False;
-    TrayIcon.Show;
-  end
+    HideApp
   else if ShowTray then
     TrayIcon.Show;
   if AutoStart then
@@ -163,12 +161,7 @@ end;
 
 procedure TMainForm.TrayIconDblClick(Sender: TObject);
 begin
-  WindowState := wsNormal;
-  Visible := True;
-  Show;
-  ShowInTaskBar := stDefault;
-  if not ShowTray then
-    TrayIcon.Hide;
+  ShowApp;
 end;
 
 procedure TMainForm.CheckServer;
@@ -212,6 +205,25 @@ begin
     end;
     CheckServer;
   end;
+end;
+
+procedure TMainForm.ShowApp;
+begin
+  Visible := True;
+  WindowState := wsNormal;
+  ShowInTaskBar := stDefault;
+  Show;
+  if ShowTray then
+    TrayIcon.Show
+  else
+    TrayIcon.Hide;
+end;
+
+procedure TMainForm.HideApp;
+begin
+  ShowInTaskBar := stNever;
+  Hide;
+  TrayIcon.Show;
 end;
 
 procedure TMainForm.Log(S: String; Kind: TmnLogKind);
@@ -264,20 +276,14 @@ begin
   begin
     //Hide;
     CloseAction := caHide;
-    ShowInTaskBar := stNever;
-    TrayIcon.Show;
+    HideApp;
   end;
 end;
 
 procedure TMainForm.FormWindowStateChange(Sender: TObject);
 begin
   if WindowState = wsMinimized then
-  begin
-//    WindowState := wsNormal;
-    Hide;
-    ShowInTaskBar := stNever;
-    TrayIcon.Show;
-  end;
+    HideApp;
 end;
 
 procedure TMainForm.ForceForegroundWindow;
@@ -287,9 +293,7 @@ var
   aProcessID: DWORD;
   {$endif}
 begin
-  Visible := True;
-  WindowState := wsNormal;
-  Show;
+  ShowApp;
   {$ifdef windows}
   aProcessID := 0;
   aForeThread := GetWindowThreadProcessId(GetForegroundWindow(), aProcessID);

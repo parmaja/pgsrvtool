@@ -2,10 +2,10 @@ object MainForm: TMainForm
   Left = 496
   Height = 343
   Top = 296
-  Width = 502
+  Width = 617
   Caption = 'PG Server'
   ClientHeight = 343
-  ClientWidth = 502
+  ClientWidth = 617
   OnClose = FormClose
   OnWindowStateChange = FormWindowStateChange
   LCLVersion = '2.1.0.0'
@@ -13,7 +13,7 @@ object MainForm: TMainForm
     Left = 0
     Height = 280
     Top = 33
-    Width = 502
+    Width = 617
     Align = alClient
     Constraints.MinHeight = 60
     Font.Height = -13
@@ -577,7 +577,7 @@ object MainForm: TMainForm
     Left = 0
     Height = 30
     Top = 313
-    Width = 502
+    Width = 617
     Align = alBottom
     Alignment = taLeftJustify
     BevelInner = bvLowered
@@ -591,14 +591,14 @@ object MainForm: TMainForm
     Left = 0
     Height = 33
     Top = 0
-    Width = 502
+    Width = 617
     Align = alTop
     BevelOuter = bvNone
     ClientHeight = 33
-    ClientWidth = 502
+    ClientWidth = 617
     TabOrder = 0
     object CloseBtn: TButton
-      Left = 398
+      Left = 513
       Height = 25
       Top = 4
       Width = 100

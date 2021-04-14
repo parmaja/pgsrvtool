@@ -113,7 +113,10 @@ end;
 procedure TmnConsoleThread.Kill;
 begin
   if FProcess <> nil then
+  begin
+    //FProcess. //send sginal ctrl+c
     FProcess.Terminate(1);
+  end;
 end;
 
 procedure TmnConsoleThread.Read;
@@ -209,7 +212,7 @@ begin
   FProcess.CurrentDirectory := FCurrentDirectory;
   FProcess.Executable := FExecutable;
   CommandToList(FParameters, FProcess.Parameters);
-  FProcess.Options := [poUsePipes, poStderrToOutPut, poNoConsole, poDetached];
+  FProcess.Options := [poUsePipes, poStderrToOutPut, poNoConsole];
   FProcess.ShowWindow := swoHide;
   FProcess.ConsoleTitle := 'PG Console';
   FProcess.InheritHandles := True;

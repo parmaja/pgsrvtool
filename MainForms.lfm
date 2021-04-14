@@ -21,6 +21,7 @@ object MainForm: TMainForm
     Font.Quality = fqNonAntialiased
     ParentColor = False
     ParentFont = False
+    PopupMenu = LogPopupMenu
     TabOrder = 0
     Gutter.RightOffset = 2
     Gutter.Width = 21
@@ -2752,6 +2753,7 @@ object MainForm: TMainForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000
     }
+    OnClick = TrayIconClick
     OnDblClick = TrayIconDblClick
     Left = 127
     Top = 103

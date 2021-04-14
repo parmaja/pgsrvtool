@@ -30,9 +30,9 @@ type
     procedure FormWindowStateChange(Sender: TObject);
     procedure StartBtnClick(Sender: TObject);
     procedure StopBtnClick(Sender: TObject);
+    procedure TrayIconClick(Sender: TObject);
     procedure TrayIconDblClick(Sender: TObject);
   private
-    FStop: Boolean;
     FDestroying: Boolean;
     UserName: string;
     Password: string;
@@ -56,6 +56,14 @@ implementation
 
 {$R *.lfm}
 
+function IncludePathDelimiter(Const Path: string): string;
+begin
+  if Path <> '' then
+    Result := IncludeTrailingPathDelimiter(Path)
+  else
+    Result := Path;
+end;
+
 { TMainForm }
 
 procedure TMainForm.LoadIni;
@@ -71,11 +79,13 @@ begin
       UserName := ini.ReadString('options', 'username', 'postgres');
       Password := ini.ReadString('options', 'password', '');
       Port := ini.ReadString('options', 'port', '');
-      PGPath := ini.ReadString('options', 'pgpath', '');
-      DataPath := ini.ReadString('options', 'DataPath', '');
+      PGPath := IncludePathDelimiter(ini.ReadString('options', 'pgpath', ''));
+      DataPath := IncludePathDelimiter(ini.ReadString('options', 'DataPath', ''));
     finally
       ini.Free;
     end;
+    Log('PGPath=' + PGPath);
+    Log('DataPath=' + DataPath);
     Log('Info loaded');
   end;
 end;
@@ -83,7 +93,6 @@ end;
 destructor TMainForm.Destroy;
 begin
   FDestroying := True;
-  FStop := True;
   inherited Destroy;
 end;
 
@@ -93,16 +102,9 @@ begin
   LoadIni;
 end;
 
-procedure TMainForm.StopBtnClick(Sender: TObject);
+procedure TMainForm.TrayIconClick(Sender: TObject);
 begin
-  FStop := True;
-  if ConsoleThread <> nil then
-  begin
-    ConsoleThread.Kill;
-    ConsoleThread.Terminate;
-    //ConsoleThread.WaitFor;
-    //FreeAndNil(ConsoleThread);
-  end;
+
 end;
 
 procedure TMainForm.TrayIconDblClick(Sender: TObject);
@@ -124,6 +126,10 @@ begin
   aConsoleThread.Message := vMessage;
   aConsoleThread.ExecuteObject := vExecuteObject;
   aConsoleThread.IgnoreError := IgnoreError;
+
+  if ConsoleThread = nil then
+    ConsoleThread := aConsoleThread;
+
   aConsoleThread.Start;
 end;
 
@@ -169,13 +175,30 @@ var
   cmd: String;
 begin
   //runservice
-  cmd := '-D "' + DataPath + '" -w start';
+  cmd := '-D "' + DataPath + '" -l "' + DataPath + 'pgserver_log.log' + '" -w start';
   Launch('Starting server', 'pg_ctl.exe', cmd, Password);
 end;
 
 procedure TMainForm.ClearLogMnuClick(Sender: TObject);
 begin
   LogEdit.Clear;
+end;
+
+procedure TMainForm.StopBtnClick(Sender: TObject);
+var
+  cmd: String;
+begin
+  //runservice
+  cmd := '-D "' + DataPath + '" -w stop';
+  Launch('Stopping server', 'pg_ctl.exe', cmd, Password);
+
+  if ConsoleThread <> nil then
+  begin
+    ConsoleThread.Kill;
+    ConsoleThread.Terminate;
+    //ConsoleThread.WaitFor;
+    //FreeAndNil(ConsoleThread);
+  end;
 end;
 
 procedure TMainForm.CloseBtnClick(Sender: TObject);

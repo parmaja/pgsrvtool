@@ -1,6 +1,6 @@
 # PG Server GUI
 
-GUI tool to run postgresql server in background, minimized to tray, without using the service, usefull if you want postgresql on external harddisk with data, maybe encrypted harddisk.
+GUI tool to run postgresql server in background, minimized to tray, without using the service, usefull for portable projects, or if you want postgresql on external harddisk with data, maybe encrypted harddisk.
 
 You need to add pgserver.ini next the exe file
 

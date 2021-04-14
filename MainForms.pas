@@ -6,9 +6,15 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, Menus,
-  ExtCtrls, ActnList, SynEdit, IniFiles,
+  {$ifdef WINDOWS}
+  Windows, //TODO, i hate include it
+  {$endif}
+  ExtCtrls, ActnList, SynEdit, IniFiles, simpleipc,
   mnMsgBox, GUIMsgBox,
   ConsoleProcess;
+
+const
+  sApplicationID = 'PARMAJA.PGServer';
 
 type
 
@@ -17,6 +23,7 @@ type
   TMainForm = class(TForm)
     CloseBtn: TButton;
     ImageList: TImageList;
+    IPCServer: TSimpleIPCServer;
     Panel1: TPanel;
     StartAct: TAction;
     StartBtn: TButton;
@@ -39,6 +46,8 @@ type
     procedure CloseActExecute(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormWindowStateChange(Sender: TObject);
+    procedure IPCServerMessage(Sender: TObject);
+    procedure IPCServerMessageQueued(Sender: TObject);
     procedure StartActExecute(Sender: TObject);
     procedure StopActExecute(Sender: TObject);
     procedure TrayIconClick(Sender: TObject);
@@ -55,8 +64,9 @@ type
     ShowTray: Boolean;
     procedure CheckServer;
     procedure ConsoleTerminated(Sender: TObject);
+    procedure ForceForegroundWindow;
     procedure Log(S: String; Kind: TmnLogKind = lgLog);
-    procedure Launch(vMessage, vExecutable, vParameters, vPassword: String; vExecuteObject: TExecuteObject = nil; IgnoreError: Boolean = False);
+    procedure Launch(AddIt: Boolean; vMessage, vExecutable, vParameters, vPassword: String; vExecuteObject: TExecuteObject = nil; IgnoreError: Boolean = False);
     procedure LoadIni;
   protected
     procedure DoShow; override;
@@ -124,6 +134,7 @@ end;
 
 destructor TMainForm.Destroy;
 begin
+  IPCServer.StopServer;
   FDestroying := True;
   inherited Destroy;
 end;
@@ -131,11 +142,13 @@ end;
 constructor TMainForm.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
+  IPCServer.ServerID := sApplicationID;
+  IPCServer.StartServer;
   LoadIni;
   TrayIcon.Icon.Assign(Application.Icon);
   if StartMinimized then
   begin
-    WindowState := wsMinimized;
+    //WindowState := wsMinimized;
     Visible := False;
     TrayIcon.Show;
   end
@@ -163,7 +176,7 @@ begin
     ImageList.GetIcon(1, TrayIcon.Icon);
 end;
 
-procedure TMainForm.Launch(vMessage, vExecutable, vParameters, vPassword: String; vExecuteObject: TExecuteObject; IgnoreError: Boolean);
+procedure TMainForm.Launch(AddIt: Boolean; vMessage, vExecutable, vParameters, vPassword: String; vExecuteObject: TExecuteObject; IgnoreError: Boolean);
 var
   aConsoleThread: TmnConsoleThread;
 begin
@@ -175,7 +188,7 @@ begin
   aConsoleThread.ExecuteObject := vExecuteObject;
   aConsoleThread.IgnoreError := IgnoreError;
 
-  if ConsoleThread = nil then
+  if AddIt and (ConsoleThread = nil) then
     ConsoleThread := aConsoleThread;
 
   aConsoleThread.Start;
@@ -212,7 +225,7 @@ begin
       StatusTimer.Enabled := True;
       LogEdit.Lines.Add('');
     end;
-    lgMessage: MsgBox.Show(S);
+//    lgMessage: MsgBox.Show(S);
   end;
   LogEdit.Lines.Add(Trim(S));
   if ScrollMnu.Checked then
@@ -255,6 +268,50 @@ begin
   end;
 end;
 
+procedure TMainForm.ForceForegroundWindow;
+{$ifdef windows}
+var
+  aForeThread, aAppThread: DWORD;
+  aProcessID: DWORD;
+  {$endif}
+begin
+  Visible := True;
+  WindowState := wsNormal;
+  Show;
+  {$ifdef windows}
+  aProcessID := 0;
+  aForeThread := GetWindowThreadProcessId(GetForegroundWindow(), aProcessID);
+  aAppThread := GetCurrentThreadId();
+
+  if (aForeThread <> aAppThread) then
+  begin
+    AttachThreadInput(aForeThread, aAppThread, True);
+    BringWindowToTop(Handle);
+    AttachThreadInput(aForeThread, aAppThread, False);
+  end
+  else
+    BringWindowToTop(Handle);
+  {$endif}
+  BringToFront;
+end;
+
+procedure TMainForm.IPCServerMessage(Sender: TObject);
+var
+  c: integer;
+begin
+  c := IPCServer.MsgType;
+  case c of
+    0: Show;
+    1: ForceForegroundWindow;
+    2: CloseAct.Execute;
+  end;
+end;
+
+procedure TMainForm.IPCServerMessageQueued(Sender: TObject);
+begin
+  IPCServer.PeekMessage(IPCServer.ThreadTimeOut, True); //not sure if it a bug in FPC
+end;
+
 procedure TMainForm.StartActExecute(Sender: TObject);
 var
   cmd: String;
@@ -264,7 +321,7 @@ begin
   cmd := cmd + ' -l "' + DataPath + 'pgserver_log.log' + '"';
   cmd := cmd + ' -w';
   cmd := cmd + ' start';
-  Launch('Run server', 'pg_ctl.exe', cmd, Password);
+  Launch(true, 'Run server', 'pg_ctl.exe', cmd, Password);
   CheckServer;
 end;
 
@@ -274,7 +331,7 @@ var
 begin
   //runservice
   cmd := '-D "' + DataPath + '" -w stop';
-  Launch('Stopping server', 'pg_ctl.exe', cmd, Password);
+  Launch(False, 'Stopping server', 'pg_ctl.exe', cmd, Password);
 
   if ConsoleThread <> nil then
   begin

@@ -2864,4 +2864,14 @@ object MainForm: TMainForm
       0B
     }
   end
+  object IPCServer: TSimpleIPCServer
+    Active = False
+    ServerID = 'Parmaja.PGServer'
+    Global = True
+    OnMessage = IPCServerMessage
+    OnMessageQueued = IPCServerMessageQueued
+    Threaded = False
+    Left = 64
+    Top = 207
+  end
 end

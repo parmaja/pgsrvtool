@@ -21,6 +21,7 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    CheckAct: TAction;
     CloseBtn: TButton;
     ImageList: TImageList;
     IPCServer: TSimpleIPCServer;
@@ -37,11 +38,13 @@ type
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
     StopBtn: TButton;
+    CheckBtn1: TButton;
     TrayPopupMenu: TPopupMenu;
     ScrollMnu: TMenuItem;
     LogEdit: TSynEdit;
     StatusTimer: TTimer;
     TrayIcon: TTrayIcon;
+    procedure CheckActExecute(Sender: TObject);
     procedure ClearLogMnuClick(Sender: TObject);
     procedure CloseActExecute(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -237,6 +240,15 @@ begin
   LogEdit.Clear;
 end;
 
+procedure TMainForm.CheckActExecute(Sender: TObject);
+var
+  cmd: string;
+begin
+  //runservice
+  cmd := '-D "' + DataPath + '" -w status';
+  Launch(False, 'Check Server:', 'pg_ctl.exe', cmd, Password);
+end;
+
 procedure TMainForm.CloseActExecute(Sender: TObject);
 begin
   FDestroying := True;
@@ -345,7 +357,7 @@ end;
 
 procedure TMainForm.TrayIconClick(Sender: TObject);
 begin
-
+  ForceForegroundWindow;
 end;
 
 end.

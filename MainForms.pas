@@ -1,7 +1,10 @@
 unit MainForms;
-
 {$mode objfpc}{$H+}
-
+{-----------------------------------------------------------------------------
+  Author:   Zaher Dirkey
+  Purpose:
+  License:   mit(https://opensource.org/licenses/MIT)
+-----------------------------------------------------------------------------}
 interface
 
 uses

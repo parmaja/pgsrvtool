@@ -1,6 +1,10 @@
 program pgserver;
-
 {$mode objfpc}{$H+}
+{-----------------------------------------------------------------------------
+  Author:   Zaher Dirkey
+  Purpose:
+  License:   mit(https://opensource.org/licenses/MIT)
+-----------------------------------------------------------------------------}
 
 uses
   {$IFDEF UNIX}
@@ -12,8 +16,7 @@ uses
   SysUtils, StrUtils,
   Interfaces, // this includes the LCL widgetset
   simpleipc,
-  Forms, MainForms
-  { you can add units after this };
+  Forms, MainForms;
 
 {$R *.res}
 

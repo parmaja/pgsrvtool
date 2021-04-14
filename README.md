@@ -29,3 +29,7 @@ start=false
 if you dont want to use this project, and want to install pg as server run this command once in admin privileges
 
     pg_ctl.exe register -N "pg13" -U "NT AUTHORITY\NetworkService" -D "d:\data\pg13" -w
+
+## License
+
+MIT(https://opensource.org/licenses/MIT)

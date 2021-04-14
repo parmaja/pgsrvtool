@@ -1,12 +1,9 @@
 unit ConsoleProcess;
-{**
- *  This file is part of the "Creative Solutions PGTools http://www.cserp.org/"
- *
- * @license   mit(https://opensource.org/licenses/MIT)
- *
- * @author    Zaher Dirkey <zaher at parmaja dot com>
- *}
-
+{-----------------------------------------------------------------------------
+  Author:   Zaher Dirkey
+  Purpose:
+  License:   mit(https://opensource.org/licenses/MIT)
+-----------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
 
 interface

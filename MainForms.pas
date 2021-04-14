@@ -203,10 +203,10 @@ begin
   begin
     if ConsoleThread <> nil then
     begin
-      if ConsoleThread.Status = 0 then
+      {if ConsoleThread.Status = 0 then
         Log(ConsoleThread.Message + ' Done', lgDone)
       else
-        Log('Error look the log', lgMessage);
+        Log('Error look the log', lgMessage);}
       ConsoleThread := nil;
       //FreeAndNil(ConsoleThread); //nop
     end;
@@ -329,8 +329,8 @@ var
   cmd: String;
 begin
   //runservice
-  cmd := '-D "' + DataPath + '"';
-  cmd := cmd + ' -l "' + DataPath + 'pgserver_log.log' + '"';
+  cmd := '-s -D "' + DataPath + '"';
+  //cmd := cmd + ' -l "' + DataPath + 'pgserver_log.log' + '"';
   cmd := cmd + ' -w';
   cmd := cmd + ' start';
   Launch(true, 'Run server', 'pg_ctl.exe', cmd, Password);
@@ -342,7 +342,7 @@ var
   cmd: String;
 begin
   //runservice
-  cmd := '-D "' + DataPath + '" -w stop';
+  cmd := '-s -D "' + DataPath + '" -w stop';
   Launch(False, 'Stopping server', 'pg_ctl.exe', cmd, Password);
 
   if ConsoleThread <> nil then

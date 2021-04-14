@@ -212,9 +212,9 @@ begin
   FProcess.CurrentDirectory := FCurrentDirectory;
   FProcess.Executable := FExecutable;
   CommandToList(FParameters, FProcess.Parameters);
-  FProcess.Options := [poUsePipes, poStderrToOutPut, poNoConsole];
+  FProcess.Options := [poUsePipes, poStderrToOutPut, poNoConsole{, poDetached}]; //do not use poDetached with pg_ctl
   FProcess.ShowWindow := swoHide;
-  FProcess.ConsoleTitle := 'PG Console';
+  FProcess.ConsoleTitle := 'Console';
   FProcess.InheritHandles := True;
   FProcess.CurrentDirectory := Application.Location;
   FProcess.StartupOptions := [suoUseShowWindow]; //<- need it in linux to show window

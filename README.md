@@ -1,4 +1,4 @@
-# pgserver
+# PG Server GUI
 
 GUI tool to run postgresql server in background, minimized to tray, without using the service, usefull if you want postgresql on external harddisk with data, maybe encrypted harddisk.
 

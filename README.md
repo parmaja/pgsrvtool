@@ -6,4 +6,6 @@ example of ini
 [options]
 pgpath=D:\programs\pg13-64\bin
 datapath=d:\data\pg13
+tray=true
+minimized=true;
 ```

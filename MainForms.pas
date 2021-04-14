@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, Menus,
-  ExtCtrls, SynEdit, IniFiles,
+  ExtCtrls, ActnList, SynEdit, IniFiles,
   mnMsgBox, GUIMsgBox,
   ConsoleProcess;
 
@@ -15,21 +15,32 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    CloseBtn: TButton;
+    ImageList: TImageList;
+    Panel1: TPanel;
+    StartAct: TAction;
+    StartBtn: TButton;
+    StopAct: TAction;
+    CloseAct: TAction;
+    ActionList: TActionList;
     ClearLogMnu: TMenuItem;
     InfoPanel: TPanel;
     LogPopupMenu: TPopupMenu;
-    ScrollMnu: TMenuItem;
-    StartBtn: TButton;
-    LogEdit: TSynEdit;
-    CloseBtn: TButton;
-    StatusTimer: TTimer;
+    MenuItem1: TMenuItem;
+    MenuItem2: TMenuItem;
+    MenuItem3: TMenuItem;
     StopBtn: TButton;
+    TrayPopupMenu: TPopupMenu;
+    ScrollMnu: TMenuItem;
+    LogEdit: TSynEdit;
+    StatusTimer: TTimer;
     TrayIcon: TTrayIcon;
     procedure ClearLogMnuClick(Sender: TObject);
-    procedure CloseBtnClick(Sender: TObject);
+    procedure CloseActExecute(Sender: TObject);
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormWindowStateChange(Sender: TObject);
-    procedure StartBtnClick(Sender: TObject);
-    procedure StopBtnClick(Sender: TObject);
+    procedure StartActExecute(Sender: TObject);
+    procedure StopActExecute(Sender: TObject);
     procedure TrayIconClick(Sender: TObject);
     procedure TrayIconDblClick(Sender: TObject);
   private
@@ -39,10 +50,16 @@ type
     Port: string;
     PGPath: string;
     DataPath: string;
+    StartMinimized: Boolean;
+    AutoStart: Boolean;
+    ShowTray: Boolean;
+    procedure CheckServer;
     procedure ConsoleTerminated(Sender: TObject);
     procedure Log(S: String; Kind: TmnLogKind = lgLog);
     procedure Launch(vMessage, vExecutable, vParameters, vPassword: String; vExecuteObject: TExecuteObject = nil; IgnoreError: Boolean = False);
     procedure LoadIni;
+  protected
+    procedure DoShow; override;
   public
     ConsoleThread: TmnConsoleThread;
     destructor Destroy; override;
@@ -76,17 +93,32 @@ begin
   begin
     ini := TIniFile.Create(Application.Location + 'pgserver.ini');
     try
+      ini.BoolFalseStrings := ['false', 'False', 'off'];
+      ini.BoolTrueStrings := ['true', 'True', 'on'];
       UserName := ini.ReadString('options', 'username', 'postgres');
       Password := ini.ReadString('options', 'password', '');
       Port := ini.ReadString('options', 'port', '');
       PGPath := IncludePathDelimiter(ini.ReadString('options', 'pgpath', ''));
       DataPath := IncludePathDelimiter(ini.ReadString('options', 'DataPath', ''));
+      StartMinimized := ini.ReadBool('options', 'minimized', false);
+      AutoStart := ini.ReadBool('options', 'start', false);
+      ShowTray := ini.ReadBool('options', 'tray', true);
     finally
       ini.Free;
     end;
     Log('PGPath=' + PGPath);
     Log('DataPath=' + DataPath);
     Log('Info loaded');
+  end;
+end;
+
+procedure TMainForm.DoShow;
+begin
+  inherited DoShow;
+  if StartMinimized then
+  begin
+    Hide;
+    StartMinimized := False;//do not use it in next show
   end;
 end;
 
@@ -100,19 +132,35 @@ constructor TMainForm.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
   LoadIni;
-end;
-
-procedure TMainForm.TrayIconClick(Sender: TObject);
-begin
-
+  TrayIcon.Icon.Assign(Application.Icon);
+  if StartMinimized then
+  begin
+    WindowState := wsMinimized;
+    Visible := False;
+    TrayIcon.Show;
+  end
+  else if ShowTray then
+    TrayIcon.Show;
+  if AutoStart then
+    StartAct.Execute;
 end;
 
 procedure TMainForm.TrayIconDblClick(Sender: TObject);
 begin
   WindowState := wsNormal;
+  Visible := True;
   Show;
   ShowInTaskBar := stDefault;
-  TrayIcon.Hide;
+  if not ShowTray then
+    TrayIcon.Hide;
+end;
+
+procedure TMainForm.CheckServer;
+begin
+  if ConsoleThread <> nil then
+    ImageList.GetIcon(0, TrayIcon.Icon)
+  else
+    ImageList.GetIcon(1, TrayIcon.Icon);
 end;
 
 procedure TMainForm.Launch(vMessage, vExecutable, vParameters, vPassword: String; vExecuteObject: TExecuteObject; IgnoreError: Boolean);
@@ -146,6 +194,7 @@ begin
       ConsoleThread := nil;
       //FreeAndNil(ConsoleThread); //nop
     end;
+    CheckServer;
   end;
 end;
 
@@ -170,21 +219,56 @@ begin
     LogEdit.CaretY := LogEdit.Lines.Count;
 end;
 
-procedure TMainForm.StartBtnClick(Sender: TObject);
-var
-  cmd: String;
-begin
-  //runservice
-  cmd := '-D "' + DataPath + '" -l "' + DataPath + 'pgserver_log.log' + '" -w start';
-  Launch('Starting server', 'pg_ctl.exe', cmd, Password);
-end;
-
 procedure TMainForm.ClearLogMnuClick(Sender: TObject);
 begin
   LogEdit.Clear;
 end;
 
-procedure TMainForm.StopBtnClick(Sender: TObject);
+procedure TMainForm.CloseActExecute(Sender: TObject);
+begin
+  FDestroying := True;
+  StopAct.Execute;
+  Close;
+end;
+
+procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+begin
+  if FDestroying then
+    CloseAction := caFree
+  else
+  begin
+    //Hide;
+    CloseAction := caHide;
+    ShowInTaskBar := stNever;
+    TrayIcon.Show;
+  end;
+end;
+
+procedure TMainForm.FormWindowStateChange(Sender: TObject);
+begin
+  if WindowState = wsMinimized then
+  begin
+//    WindowState := wsNormal;
+    Hide;
+    ShowInTaskBar := stNever;
+    TrayIcon.Show;
+  end;
+end;
+
+procedure TMainForm.StartActExecute(Sender: TObject);
+var
+  cmd: String;
+begin
+  //runservice
+  cmd := '-D "' + DataPath + '"';
+  cmd := cmd + ' -l "' + DataPath + 'pgserver_log.log' + '"';
+  cmd := cmd + ' -w';
+  cmd := cmd + ' start';
+  Launch('Run server', 'pg_ctl.exe', cmd, Password);
+  CheckServer;
+end;
+
+procedure TMainForm.StopActExecute(Sender: TObject);
 var
   cmd: String;
 begin
@@ -199,22 +283,12 @@ begin
     //ConsoleThread.WaitFor;
     //FreeAndNil(ConsoleThread);
   end;
+  CheckServer;
 end;
 
-procedure TMainForm.CloseBtnClick(Sender: TObject);
+procedure TMainForm.TrayIconClick(Sender: TObject);
 begin
-  Close;
-end;
 
-procedure TMainForm.FormWindowStateChange(Sender: TObject);
-begin
-  if WindowState = wsMinimized then
-  begin
-    WindowState := wsNormal;
-    Hide;
-    ShowInTaskBar := stNever;
-    TrayIcon.Show;
-  end;
 end;
 
 end.

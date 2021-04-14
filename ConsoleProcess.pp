@@ -245,7 +245,8 @@ begin
       end;
     end;
   finally
-    Log('Execute Time: "' + TicksToString(GetTickCount64 - d) + '" with Status: ' + IntToStr(Status) );
+    //Log('Execute Time: "' + TicksToString(GetTickCount64 - d) + '" with Status: ' + IntToStr(Status) );
+    Log(Message + ' return: ' + IntToStr(Status) );
   end;
 
   if FProcess <> nil then

@@ -12,6 +12,7 @@ uses
   {$ifdef WINDOWS}
   Windows, //TODO, i hate include it
   {$endif}
+  mnUtils,
   ExtCtrls, ActnList, SynEdit, IniFiles, simpleipc,
   mnMsgBox, GUIMsgBox,
   ConsoleProcess;
@@ -72,6 +73,7 @@ type
     ShowTray: Boolean;
     procedure CheckServer;
     procedure ConsoleTerminated(Sender: TObject);
+    function ExpandFile(FileName: string): string;
     procedure ShowApp;
     procedure HideApp;
     procedure ForceForegroundWindow;
@@ -104,6 +106,14 @@ end;
 
 { TMainForm }
 
+function TMainForm.ExpandFile(FileName: string): string;
+begin
+  if FileName <> '' then
+    Result := ExpandFileName(ExpandToPath(FileName, Application.Location))
+  else
+    Result := '';
+end;
+
 procedure TMainForm.LoadIni;
 var
   ini: TIniFile;
@@ -119,8 +129,8 @@ begin
       UserName := ini.ReadString('options', 'username', 'postgres');
       Password := ini.ReadString('options', 'password', '');
       Port := ini.ReadString('options', 'port', '');
-      PGPath := IncludePathDelimiter(ini.ReadString('options', 'pgpath', ''));
-      DataPath := IncludePathDelimiter(ini.ReadString('options', 'DataPath', ''));
+      PGPath := IncludePathDelimiter(ExpandFile(ini.ReadString('options', 'pgpath', '')));
+      DataPath := IncludePathDelimiter(ExpandFile(ini.ReadString('options', 'DataPath', '')));
       StartMinimized := ini.ReadBool('options', 'minimized', false);
       AutoStart := ini.ReadBool('options', 'start', false);
       ShowTray := ini.ReadBool('options', 'tray', true);

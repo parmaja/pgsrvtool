@@ -12,6 +12,7 @@ uses
   {$ifdef WINDOWS}
   Windows, //TODO, i hate include it
   {$endif}
+  ImgList,
   mnUtils,
   ExtCtrls, ActnList, SynEdit, IniFiles, simpleipc,
   mnMsgBox, GUIMsgBox,
@@ -147,8 +148,16 @@ procedure TMainForm.Stop(WaitIt: Boolean);
 var
   cmd: String;
 begin
+  if (PGPath = '') or (DataPath = '') then
+  begin
+    Log('Paths is empty, please edit pgserver.ini');
+    exit;
+  end;
   if WaitIt and (ConsoleThread <> nil) then
+  begin
     ConsoleThread.FreeOnTerminate := False;
+    ConsoleThread.OnTerminate := nil;
+  end;
   //runservice
   cmd := '-s -D "' + DataPath + '" -w stop';
   Launch(False, 'Stopping server', 'pg_ctl.exe', cmd, Password, nil, false, WaitIt);
@@ -186,7 +195,7 @@ begin
   IPCServer.ServerID := sApplicationID;
   IPCServer.StartServer;
   LoadIni;
-  TrayIcon.Icon.Assign(Application.Icon);
+  CheckServer;
   if StartMinimized then
     HideApp
   else if ShowTray then
@@ -200,20 +209,41 @@ begin
   ShowApp;
 end;
 
+procedure GetIcon(ImageList: TCustomImageList; Index: Integer; aImage: TIcon; AllResolutions: Boolean);
+var
+  i: Integer;
+  aResolution: TCustomImageListResolution;
+begin
+  with ImageList do
+  begin
+    aImage.Clear;
+    for i :=0 to ResolutionCount - 1 do
+    begin
+      aResolution := ResolutionByIndex[i];
+      aImage.Add(pf32bit, aResolution.Height, aResolution.Width);
+      aImage.Current := i;
+      aResolution.GetIcon(Index, aImage);
+    end;
+  end;
+end;
+
 procedure TMainForm.CheckServer;
 begin
   if ConsoleThread <> nil then
   begin
     ImageList.GetIcon(0, TrayIcon.Icon);
+    ImageList.GetIcon(0, Icon);
     StartAct.Enabled := False;
     StopAct.Enabled := True;
   end
   else
   begin
     ImageList.GetIcon(1, TrayIcon.Icon);
+    ImageList.GetIcon(1, Icon);
     StartAct.Enabled := True;
-    StopAct.Enabled := False;
+    //StopAct.Enabled := False; //no, maybe we need to force stop
   end;
+  //Application.Icon.Assign(TrayIcon.Icon);
 end;
 
 procedure TMainForm.Launch(AddIt: Boolean; vMessage, vExecutable, vParameters, vPassword: String; vExecuteObject: TExecuteObject; IgnoreError: Boolean; WaitIt: Boolean);
@@ -302,6 +332,11 @@ procedure TMainForm.CheckActExecute(Sender: TObject);
 var
   cmd: string;
 begin
+  if (PGPath = '') or (DataPath = '') then
+  begin
+    Log('Paths is empty, please edit pgserver.ini');
+    exit;
+  end;
   //runservice
   cmd := '-D "' + DataPath + '" -w status';
   Launch(False, 'Check Server:', 'pg_ctl.exe', cmd, Password);
@@ -383,6 +418,11 @@ procedure TMainForm.StartActExecute(Sender: TObject);
 var
   cmd: String;
 begin
+  if (PGPath = '') or (DataPath = '') then
+  begin
+    Log('Paths is empty, please edit pgserver.ini');
+    exit;
+  end;
   //runservice
   cmd := '-s -D "' + DataPath + '"';
   //cmd := cmd + ' -l "' + DataPath + 'pgserver_log.log' + '"';

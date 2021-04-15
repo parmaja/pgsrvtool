@@ -19,10 +19,10 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
-      <MinorVersionNr Value="9"/>
+      <MajorVersionNr Value="1"/>
       <RevisionNr Value="1"/>
-      <BuildNr Value="21"/>
-      <StringTable CompanyName="PARMAJA" InternalName="PG Server GUI"/>
+      <BuildNr Value="1"/>
+      <StringTable CompanyName="PARMAJA" FileDescription="GUI tool start and stop portable pg server" InternalName="PG Server GUI" LegalCopyright="MIT" ProductName="PG Server GUI"/>
     </VersionInfo>
     <BuildModes>
       <Item Name="Debug" Default="True"/>

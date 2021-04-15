@@ -24,6 +24,7 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    ApplicationProperties: TApplicationProperties;
     CheckAct: TAction;
     CloseBtn: TButton;
     ImageList: TImageList;
@@ -47,6 +48,7 @@ type
     LogEdit: TSynEdit;
     StatusTimer: TTimer;
     TrayIcon: TTrayIcon;
+    procedure ApplicationPropertiesEndSession(Sender: TObject);
     procedure CheckActExecute(Sender: TObject);
     procedure ClearLogMnuClick(Sender: TObject);
     procedure CloseActExecute(Sender: TObject);
@@ -74,8 +76,9 @@ type
     procedure HideApp;
     procedure ForceForegroundWindow;
     procedure Log(S: String; Kind: TmnLogKind = lgLog);
-    procedure Launch(AddIt: Boolean; vMessage, vExecutable, vParameters, vPassword: String; vExecuteObject: TExecuteObject = nil; IgnoreError: Boolean = False);
+    procedure Launch(AddIt: Boolean; vMessage, vExecutable, vParameters, vPassword: String; vExecuteObject: TExecuteObject = nil; IgnoreError: Boolean = False; WaitIt: Boolean = False);
     procedure LoadIni;
+    procedure Stop(WaitIt: Boolean = False);
   protected
     procedure DoShow; override;
   public
@@ -130,6 +133,26 @@ begin
   end;
 end;
 
+procedure TMainForm.Stop(WaitIt: Boolean);
+var
+  cmd: String;
+begin
+  if WaitIt and (ConsoleThread <> nil) then
+    ConsoleThread.FreeOnTerminate := False;
+  //runservice
+  cmd := '-s -D "' + DataPath + '" -w stop';
+  Launch(False, 'Stopping server', 'pg_ctl.exe', cmd, Password, nil, false, WaitIt);
+  if ConsoleThread <> nil then
+  begin
+    ConsoleThread.Terminate;
+    if WaitIt then
+    begin
+      ConsoleThread.WaitFor;
+      FreeAndNil(ConsoleThread);
+    end;
+  end;
+end;
+
 procedure TMainForm.DoShow;
 begin
   inherited DoShow;
@@ -170,12 +193,20 @@ end;
 procedure TMainForm.CheckServer;
 begin
   if ConsoleThread <> nil then
-    ImageList.GetIcon(0, TrayIcon.Icon)
+  begin
+    ImageList.GetIcon(0, TrayIcon.Icon);
+    StartAct.Enabled := False;
+    StopAct.Enabled := True;
+  end
   else
+  begin
     ImageList.GetIcon(1, TrayIcon.Icon);
+    StartAct.Enabled := True;
+    StopAct.Enabled := False;
+  end;
 end;
 
-procedure TMainForm.Launch(AddIt: Boolean; vMessage, vExecutable, vParameters, vPassword: String; vExecuteObject: TExecuteObject; IgnoreError: Boolean);
+procedure TMainForm.Launch(AddIt: Boolean; vMessage, vExecutable, vParameters, vPassword: String; vExecuteObject: TExecuteObject; IgnoreError: Boolean; WaitIt: Boolean);
 var
   aConsoleThread: TmnConsoleThread;
 begin
@@ -191,6 +222,8 @@ begin
     ConsoleThread := aConsoleThread;
 
   aConsoleThread.Start;
+  if WaitIt then
+    aConsoleThread.WaitFor;
 end;
 
 procedure TMainForm.ConsoleTerminated(Sender: TObject);
@@ -264,10 +297,15 @@ begin
   Launch(False, 'Check Server:', 'pg_ctl.exe', cmd, Password);
 end;
 
+procedure TMainForm.ApplicationPropertiesEndSession(Sender: TObject);
+begin
+  FDestroying := True;
+end;
+
 procedure TMainForm.CloseActExecute(Sender: TObject);
 begin
   FDestroying := True;
-  StopAct.Execute;
+  Stop(True);
   Close;
 end;
 
@@ -345,21 +383,8 @@ begin
 end;
 
 procedure TMainForm.StopActExecute(Sender: TObject);
-var
-  cmd: String;
 begin
-  //runservice
-  cmd := '-s -D "' + DataPath + '" -w stop';
-  Launch(False, 'Stopping server', 'pg_ctl.exe', cmd, Password);
-
-  if ConsoleThread <> nil then
-  begin
-    ConsoleThread.Kill;
-    ConsoleThread.Terminate;
-    //ConsoleThread.WaitFor;
-    //FreeAndNil(ConsoleThread);
-  end;
-  CheckServer;
+  Stop;
 end;
 
 procedure TMainForm.TrayIconClick(Sender: TObject);

@@ -229,7 +229,8 @@ begin
       if FProcess.Running and (FProcess.Input <> nil) and (Password <> '') then
         StreamWriteLn(Password);
       FProcess.CloseInput;
-      ReadStream;
+      if FProcess.Running then
+        ReadStream;
       Status := FProcess.ExitStatus;
       FreeAndNil(FProcess);
       if (IgnoreError or (Status = 0)) and (FExecuteObject <> nil) then

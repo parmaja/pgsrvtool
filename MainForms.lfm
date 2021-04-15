@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 496
+  Left = 207
   Height = 343
-  Top = 296
+  Top = 189
   Width = 617
   Caption = 'PG Server'
   ClientHeight = 343
@@ -541,6 +541,10 @@ object MainForm: TMainForm
     SelectedColor.ItalicPriority = 50
     SelectedColor.UnderlinePriority = 50
     SelectedColor.StrikeOutPriority = 50
+    ScrollOnEditLeftOptions.ScrollExtraPercent = 20
+    ScrollOnEditLeftOptions.ScrollExtraMax = 10
+    ScrollOnEditRightOptions.ScrollExtraPercent = 30
+    ScrollOnEditRightOptions.ScrollExtraMax = 25
     BracketHighlightStyle = sbhsBoth
     BracketMatchColor.Background = clNone
     BracketMatchColor.Foreground = clNone
@@ -2885,5 +2889,11 @@ object MainForm: TMainForm
     Threaded = False
     Left = 64
     Top = 207
+  end
+  object ApplicationProperties: TApplicationProperties
+    Title = 'PG Server GUI'
+    OnEndSession = ApplicationPropertiesEndSession
+    Left = 320
+    Top = 56
   end
 end

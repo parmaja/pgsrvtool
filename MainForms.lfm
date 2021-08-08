@@ -8,7 +8,7 @@ object MainForm: TMainForm
   ClientWidth = 617
   OnClose = FormClose
   OnWindowStateChange = FormWindowStateChange
-  LCLVersion = '2.1.0.0'
+  LCLVersion = '2.3.0.0'
   inline LogEdit: TSynEdit
     Left = 0
     Height = 280

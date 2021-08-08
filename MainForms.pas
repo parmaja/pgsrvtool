@@ -153,23 +153,31 @@ begin
     Log('Paths is empty, please edit pgserver.ini');
     exit;
   end;
-  if WaitIt and (ConsoleThread <> nil) then
-  begin
-    ConsoleThread.FreeOnTerminate := False;
-    ConsoleThread.OnTerminate := nil;
-  end;
+
   //runservice
   cmd := '-s -D "' + DataPath + '" -w stop';
   Launch(False, 'Stopping server', 'pg_ctl.exe', cmd, Password, nil, false, WaitIt);
-  if ConsoleThread <> nil then
+
+  if (ConsoleThread <> nil) then
   begin
-    ConsoleThread.Terminate;
     if WaitIt then
     begin
-      ConsoleThread.WaitFor;
-      FreeAndNil(ConsoleThread);
+      ConsoleThread.FreeOnTerminate := False;
+      ConsoleThread.OnTerminate := nil;
+    end;
+
+    if ConsoleThread <> nil then
+    begin
+      ConsoleThread.Terminate;
+
+      if WaitIt then
+      begin
+        ConsoleThread.WaitFor;
+        FreeAndNil(ConsoleThread);
+      end;
     end;
   end;
+
 end;
 
 procedure TMainForm.DoShow;
@@ -252,33 +260,43 @@ var
 begin
   vExecutable := IncludeTrailingPathDelimiter(PGPath) + vExecutable;
   aConsoleThread := TmnConsoleThread.Create(vExecutable, PGPath, vParameters, @Log);
-  aConsoleThread.OnTerminate := @ConsoleTerminated;
+  if WaitIt then
+    aConsoleThread.FreeOnTerminate := False
+  else
+    aConsoleThread.OnTerminate := @ConsoleTerminated;
   aConsoleThread.Password := vPassword;
   aConsoleThread.Message := vMessage;
   aConsoleThread.ExecuteObject := vExecuteObject;
   aConsoleThread.IgnoreError := IgnoreError;
 
-  if AddIt and (ConsoleThread = nil) then
+  if AddIt then
+  begin
+    if (ConsoleThread <> nil) then
+      raise Exception.Create('Running Process is already exists');
     ConsoleThread := aConsoleThread;
+  end;
 
   aConsoleThread.Start;
   if WaitIt then
+  begin
     aConsoleThread.WaitFor;
+    FreeAndNil(aConsoleThread)
+  end;
 end;
 
 procedure TMainForm.ConsoleTerminated(Sender: TObject);
 begin
+  if ConsoleThread <> nil then
+  begin
+    {if ConsoleThread.Status = 0 then
+      Log(ConsoleThread.Message + ' Done', lgDone)
+    else
+      Log('Error look the log', lgMessage);}
+    ConsoleThread := nil;
+    //FreeAndNil(ConsoleThread); //nop
+  end;
   if not FDestroying then
   begin
-    if ConsoleThread <> nil then
-    begin
-      {if ConsoleThread.Status = 0 then
-        Log(ConsoleThread.Message + ' Done', lgDone)
-      else
-        Log('Error look the log', lgMessage);}
-      ConsoleThread := nil;
-      //FreeAndNil(ConsoleThread); //nop
-    end;
     CheckServer;
   end;
 end;

@@ -594,48 +594,57 @@ object MainForm: TMainForm
     Width = 617
     Align = alTop
     BevelOuter = bvNone
+    ChildSizing.LeftRightSpacing = 3
+    ChildSizing.TopBottomSpacing = 3
+    ChildSizing.HorizontalSpacing = 3
+    ChildSizing.VerticalSpacing = 3
     ClientHeight = 33
     ClientWidth = 617
     TabOrder = 0
     object CloseBtn: TButton
-      Left = 513
-      Height = 25
-      Top = 4
+      Left = 411
+      Height = 27
+      Top = 3
       Width = 100
       Action = ExitAct
+      Align = alRight
       Anchors = [akTop, akRight]
       TabOrder = 3
     end
     object StopBtn: TButton
-      Left = 111
-      Height = 25
-      Top = 4
+      Left = 106
+      Height = 27
+      Top = 3
       Width = 100
       Action = StopAct
+      Align = alLeft
       TabOrder = 1
     end
     object StartBtn: TButton
-      Left = 5
-      Height = 25
-      Top = 4
+      Left = 3
+      Height = 27
+      Top = 3
       Width = 100
       Action = StartAct
+      Align = alLeft
       TabOrder = 0
     end
     object CheckBtn1: TButton
-      Left = 217
-      Height = 25
-      Top = 4
+      Left = 209
+      Height = 27
+      Top = 3
       Width = 100
       Action = CheckAct
+      Align = alLeft
       TabOrder = 2
     end
     object CloseBtn1: TButton
-      Left = 411
-      Height = 25
-      Top = 4
+      Left = 514
+      Height = 27
+      Top = 3
       Width = 100
       Action = HideAct
+      Align = alRight
       Anchors = [akTop, akRight]
       TabOrder = 4
     end

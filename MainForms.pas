@@ -138,6 +138,7 @@ begin
       StartMinimized := ini.ReadBool('options', 'minimized', false);
       AutoStart := ini.ReadBool('options', 'start', false);
       ShowTray := ini.ReadBool('options', 'tray', true);
+      SetBounds(Left, Top, ini.ReadInteger('Size', 'Width', Width), ini.ReadInteger('Size', 'Height', Height));
     finally
       ini.Free;
     end;
@@ -376,9 +377,20 @@ begin
 end;
 
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+var
+  ini: TIniFile;
 begin
   if FDestroying then
-    CloseAction := caFree
+  begin
+    CloseAction := caFree;
+    ini := TIniFile.Create(Application.Location + 'pgserver.ini');
+    try
+      ini.WriteInteger('Size', 'Width', Width);
+      ini.WriteInteger('Size', 'Height', Height);
+    finally
+      ini.Free;
+    end;
+  end
   else
   begin
     //Hide;

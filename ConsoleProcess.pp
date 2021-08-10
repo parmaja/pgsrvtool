@@ -52,7 +52,7 @@ type
     destructor Destroy; override;
     procedure Kill;
     procedure Execute; override;
-    procedure Read; virtual;
+    //procedure Read; virtual;
     procedure ReadPrompt; virtual;
     procedure ReadStream; virtual;
     procedure Log(S: String; Kind: TmnLogKind = lgLog);
@@ -116,7 +116,7 @@ begin
   end;
 end;
 
-procedure TmnConsoleThread.Read;
+{procedure TmnConsoleThread.Read;
 var
   T: String;
   aBuffer: array[0..79] of AnsiChar;
@@ -143,7 +143,7 @@ begin
         Log(T);
     end;
   end;
-end;
+end;}
 
 procedure TmnConsoleThread.ReadPrompt;
 var
@@ -170,7 +170,7 @@ begin
   begin
     try
       aWrapper := TmnWrapperStream.Create(FProcess.Output, False);
-      aWrapper.EndOfLine := #13;
+      aWrapper.EndOfLine := #10;
 
       while not Terminated do
       begin

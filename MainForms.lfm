@@ -602,7 +602,7 @@ object MainForm: TMainForm
       Height = 25
       Top = 4
       Width = 100
-      Action = CloseAct
+      Action = ExitAct
       Anchors = [akTop, akRight]
       TabOrder = 3
     end
@@ -629,6 +629,15 @@ object MainForm: TMainForm
       Width = 100
       Action = CheckAct
       TabOrder = 2
+    end
+    object CloseBtn1: TButton
+      Left = 411
+      Height = 25
+      Top = 4
+      Width = 100
+      Action = HideAct
+      Anchors = [akTop, akRight]
+      TabOrder = 4
     end
   end
   object LogPopupMenu: TPopupMenu
@@ -2785,7 +2794,7 @@ object MainForm: TMainForm
       Action = StopAct
     end
     object MenuItem3: TMenuItem
-      Action = CloseAct
+      Action = ExitAct
     end
   end
   object ActionList: TActionList
@@ -2799,13 +2808,17 @@ object MainForm: TMainForm
       Caption = 'S&top'
       OnExecute = StopActExecute
     end
-    object CloseAct: TAction
-      Caption = '&Close'
-      OnExecute = CloseActExecute
+    object ExitAct: TAction
+      Caption = 'E&xit'
+      OnExecute = ExitActExecute
     end
     object CheckAct: TAction
       Caption = 'Chec&k'
       OnExecute = CheckActExecute
+    end
+    object HideAct: TAction
+      Caption = '&Hide'
+      OnExecute = HideActExecute
     end
   end
   object ImageList: TImageList

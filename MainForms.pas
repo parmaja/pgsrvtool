@@ -26,16 +26,18 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    HideAct: TAction;
     ApplicationProperties: TApplicationProperties;
     CheckAct: TAction;
     CloseBtn: TButton;
+    CloseBtn1: TButton;
     ImageList: TImageList;
     IPCServer: TSimpleIPCServer;
     Panel1: TPanel;
     StartAct: TAction;
     StartBtn: TButton;
     StopAct: TAction;
-    CloseAct: TAction;
+    ExitAct: TAction;
     ActionList: TActionList;
     ClearLogMnu: TMenuItem;
     InfoPanel: TPanel;
@@ -53,9 +55,10 @@ type
     procedure ApplicationPropertiesEndSession(Sender: TObject);
     procedure CheckActExecute(Sender: TObject);
     procedure ClearLogMnuClick(Sender: TObject);
-    procedure CloseActExecute(Sender: TObject);
+    procedure ExitActExecute(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormWindowStateChange(Sender: TObject);
+    procedure HideActExecute(Sender: TObject);
     procedure IPCServerMessage(Sender: TObject);
     procedure IPCServerMessageQueued(Sender: TObject);
     procedure StartActExecute(Sender: TObject);
@@ -357,7 +360,7 @@ begin
   end;
   //runservice
   cmd := '-D "' + DataPath + '" -w status';
-  Launch(False, 'Check Server:', 'pg_ctl.exe', cmd, Password);
+  Launch(False, 'Checking Server:', 'pg_ctl.exe', cmd, Password);
 end;
 
 procedure TMainForm.ApplicationPropertiesEndSession(Sender: TObject);
@@ -365,7 +368,7 @@ begin
   FDestroying := True;
 end;
 
-procedure TMainForm.CloseActExecute(Sender: TObject);
+procedure TMainForm.ExitActExecute(Sender: TObject);
 begin
   FDestroying := True;
   Stop(True);
@@ -388,6 +391,11 @@ procedure TMainForm.FormWindowStateChange(Sender: TObject);
 begin
   if WindowState = wsMinimized then
     HideApp;
+end;
+
+procedure TMainForm.HideActExecute(Sender: TObject);
+begin
+  HideApp;
 end;
 
 procedure TMainForm.ForceForegroundWindow;
@@ -423,7 +431,7 @@ begin
   case c of
     0: Show;
     1: ForceForegroundWindow;
-    2: CloseAct.Execute;
+    2: ExitAct.Execute;
   end;
 end;
 
@@ -446,7 +454,7 @@ begin
   //cmd := cmd + ' -l "' + DataPath + 'pgserver_log.log' + '"';
   cmd := cmd + ' -w';
   cmd := cmd + ' start';
-  Launch(true, 'Run server', 'pg_ctl.exe', cmd, Password);
+  Launch(true, 'Runing server', 'pg_ctl.exe', cmd, Password);
   CheckServer;
 end;
 

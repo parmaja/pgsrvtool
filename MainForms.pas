@@ -266,7 +266,7 @@ begin
   aConsoleThread := TmnConsoleThread.Create(vExecutable, PGPath, vParameters, @Log);
   if WaitIt then
     aConsoleThread.FreeOnTerminate := False
-  else
+  else if AddIt then
     aConsoleThread.OnTerminate := @ConsoleTerminated;
   aConsoleThread.Password := vPassword;
   aConsoleThread.Message := vMessage;

@@ -46,6 +46,7 @@ begin
   RequireDerivedFormResource :=True;
   if not IsAnotherInstance then
   begin
+    Application.Name := 'pgsrvtool';
   Application.Title :='PG Server GUI';
   Application.Scaled :=True;
     Application.Initialize;

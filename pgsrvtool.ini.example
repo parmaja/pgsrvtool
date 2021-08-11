@@ -1,0 +1,5 @@
+[options]
+pgpath=
+datapath=
+minimized=true
+start=true

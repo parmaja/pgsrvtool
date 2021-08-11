@@ -20,9 +20,9 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <MinorVersionNr Value="2"/>
+      <MinorVersionNr Value="3"/>
       <RevisionNr Value="1"/>
-      <BuildNr Value="11"/>
+      <BuildNr Value="13"/>
       <StringTable CompanyName="PARMAJA" FileDescription="PG GUI tool start and stop portable pg server" InternalName="PG Server GUI" LegalCopyright="MIT" ProductName="PG Server GUI"/>
     </VersionInfo>
     <BuildModes>
@@ -32,7 +32,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="pgserver"/>
+            <Filename Value="pgsrvtool"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -101,7 +101,7 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="pgserver"/>
+      <Filename Value="pgsrvtool"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>

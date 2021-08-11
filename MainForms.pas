@@ -123,10 +123,10 @@ var
   ini: TIniFile;
   f: string;
 begin
-  f := Application.Location + 'pgserver.ini';
+  f := Application.Location + Application.Name + '.ini';
   if FileExists(f) then
   begin
-    ini := TIniFile.Create(Application.Location + 'pgserver.ini');
+    ini := TIniFile.Create(Application.Location + Application.Name + '.ini');
     try
       ini.BoolFalseStrings := ['false', 'False', 'off'];
       ini.BoolTrueStrings := ['true', 'True', 'on'];
@@ -383,7 +383,7 @@ begin
   if FDestroying then
   begin
     CloseAction := caFree;
-    ini := TIniFile.Create(Application.Location + 'pgserver.ini');
+    ini := TIniFile.Create(Application.Location + Application.Name + '.ini');
     try
       ini.WriteInteger('Size', 'Width', Width);
       ini.WriteInteger('Size', 'Height', Height);

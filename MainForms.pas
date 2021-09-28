@@ -100,6 +100,20 @@ implementation
 
 {$R *.lfm}
 
+//Ported from Trim functions
+
+function TrimEOL(const S: string): string;
+var Ofs, Len: integer;
+begin
+  len := Length(S);
+  while (Len>0) and (S[Len] in [#13, #10]) do
+   dec(Len);
+  Ofs := 1;
+  while (Ofs<=Len) and (S[Ofs] in [#13, #10]) do
+   Inc(Ofs);
+  result := Copy(S, Ofs, 1 + Len - Ofs);
+end ;
+
 function IncludePathDelimiter(Const Path: string): string;
 begin
   if Path <> '' then
@@ -327,7 +341,6 @@ end;
 procedure TMainForm.Log(S: String; Kind: TmnLogKind);
 begin
   case Kind of
-    lgLog: ;
     lgStatus:
     begin
       InfoPanel.Caption := S;
@@ -338,9 +351,10 @@ begin
       StatusTimer.Enabled := True;
       LogEdit.Lines.Add('');
     end;
+    else ;
 //    lgMessage: MsgBox.Show(S);
   end;
-  LogEdit.Lines.Add(Trim(S));
+  LogEdit.Lines.Add(TrimEOL(S));
   if ScrollMnu.Checked then
     LogEdit.CaretY := LogEdit.Lines.Count;
 end;

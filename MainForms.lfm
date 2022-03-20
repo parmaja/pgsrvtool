@@ -2,10 +2,10 @@ object MainForm: TMainForm
   Left = 207
   Height = 343
   Top = 189
-  Width = 617
+  Width = 671
   Caption = 'PG Server'
   ClientHeight = 343
-  ClientWidth = 617
+  ClientWidth = 671
   OnClose = FormClose
   OnWindowStateChange = FormWindowStateChange
   LCLVersion = '2.3.0.0'
@@ -13,7 +13,7 @@ object MainForm: TMainForm
     Left = 0
     Height = 280
     Top = 33
-    Width = 617
+    Width = 671
     Align = alClient
     Constraints.MinHeight = 60
     Font.Height = -13
@@ -577,7 +577,7 @@ object MainForm: TMainForm
     Left = 0
     Height = 30
     Top = 313
-    Width = 617
+    Width = 671
     Align = alBottom
     Alignment = taLeftJustify
     BevelInner = bvLowered
@@ -591,7 +591,7 @@ object MainForm: TMainForm
     Left = 0
     Height = 33
     Top = 0
-    Width = 617
+    Width = 671
     Align = alTop
     BevelOuter = bvNone
     ChildSizing.LeftRightSpacing = 3
@@ -599,10 +599,10 @@ object MainForm: TMainForm
     ChildSizing.HorizontalSpacing = 3
     ChildSizing.VerticalSpacing = 3
     ClientHeight = 33
-    ClientWidth = 617
+    ClientWidth = 671
     TabOrder = 0
     object CloseBtn: TButton
-      Left = 411
+      Left = 465
       Height = 27
       Top = 3
       Width = 100
@@ -639,7 +639,7 @@ object MainForm: TMainForm
       TabOrder = 2
     end
     object CloseBtn1: TButton
-      Left = 514
+      Left = 568
       Height = 27
       Top = 3
       Width = 100
@@ -647,6 +647,15 @@ object MainForm: TMainForm
       Align = alRight
       Anchors = [akTop, akRight]
       TabOrder = 4
+    end
+    object InitDataBtn: TButton
+      Left = 312
+      Height = 27
+      Top = 3
+      Width = 100
+      Action = InitDataAct
+      Align = alLeft
+      TabOrder = 5
     end
   end
   object LogPopupMenu: TPopupMenu
@@ -2828,6 +2837,10 @@ object MainForm: TMainForm
     object HideAct: TAction
       Caption = '&Hide'
       OnExecute = HideActExecute
+    end
+    object InitDataAct: TAction
+      Caption = 'Init Data'
+      OnExecute = InitDataActExecute
     end
   end
   object ImageList: TImageList

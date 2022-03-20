@@ -68,13 +68,13 @@
     </RunParams>
     <RequiredPackages>
       <Item>
+        <PackageName Value="MiniLib"/>
+      </Item>
+      <Item>
         <PackageName Value="FCL"/>
       </Item>
       <Item>
         <PackageName Value="MiniCtrls"/>
-      </Item>
-      <Item>
-        <PackageName Value="MiniCommons"/>
       </Item>
       <Item>
         <PackageName Value="SynEdit"/>

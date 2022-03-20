@@ -5,6 +5,18 @@ unit MainForms;
   Purpose:
   License:   mit(https://opensource.org/licenses/MIT)
 -----------------------------------------------------------------------------}
+
+{
+  TODO Upgrade
+  Change hba method to trust
+  Change ports in postgresql.conf
+  set PGUSER=postgres
+  set PGPASSWORD=
+  pg_upgrade.exe -p 5433 -d "d:\data\pg13" -b "D:\programs\pg13-64\bin" -P 5432 -D "d:\data\pg14" -B "D:\programs\pg14-64\bin"
+
+  psql -p 5432 -f c:\temp\update_extensions.sql
+}
+
 interface
 
 uses
@@ -26,6 +38,7 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    InitDataAct: TAction;
     HideAct: TAction;
     ApplicationProperties: TApplicationProperties;
     CheckAct: TAction;
@@ -36,6 +49,7 @@ type
     Panel1: TPanel;
     StartAct: TAction;
     StartBtn: TButton;
+    InitDataBtn: TButton;
     StopAct: TAction;
     ExitAct: TAction;
     ActionList: TActionList;
@@ -59,6 +73,7 @@ type
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormWindowStateChange(Sender: TObject);
     procedure HideActExecute(Sender: TObject);
+    procedure InitDataActExecute(Sender: TObject);
     procedure IPCServerMessage(Sender: TObject);
     procedure IPCServerMessageQueued(Sender: TObject);
     procedure StartActExecute(Sender: TObject);
@@ -422,6 +437,26 @@ end;
 procedure TMainForm.HideActExecute(Sender: TObject);
 begin
   HideApp;
+end;
+
+procedure TMainForm.InitDataActExecute(Sender: TObject);
+var
+  cmd: String;
+  aPath: string;
+begin
+  aPath := DataPath;
+  if Password = '' then
+    MsgBox.Password(Password, 'Enter postgre password');
+  if (Password <> '') and SelectDirectory(aPath, [sdAllowCreate, sdPerformCreate, sdPrompt], 0) then
+  begin
+    ForceDirectories(aPath);
+    cmd := ' -D "' + aPath + '" -U ' + UserName + ' -W --encoding=UTF8';
+    Launch(true, 'Init database folder', 'initdb', cmd, Password); //TODO twice of password
+{
+    cmd := '"pg_ctl.exe initdb -D ''' + aPath + ''' -w -U ' + UserName + ' -P ' + Password + ' --encoding=UTF8"';
+    Launch(true, 'Init database folder', 'runas /user:' + UserName, cmd, password);
+}
+  end;
 end;
 
 procedure TMainForm.ForceForegroundWindow;

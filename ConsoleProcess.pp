@@ -41,6 +41,7 @@ type
     FProcess: TProcess;
     procedure SetExecuteObject(AValue: TExecuteObject);
   protected
+    StreamWrapper: TmnWrapperStream;
     FString: String;
     FKind: TmnLogKind;
     procedure DoOnLog; virtual; //To Sync
@@ -52,7 +53,6 @@ type
     destructor Destroy; override;
     procedure Kill;
     procedure Execute; override;
-    //procedure Read; virtual;
     procedure ReadPrompt; virtual;
     procedure ReadStream; virtual;
     procedure Log(S: String; Kind: TmnLogKind = lgLog);
@@ -162,38 +162,30 @@ end;
 
 procedure TmnConsoleThread.ReadStream;
 var
-  aWrapper: TmnWrapperStream;
-  S: string;
+  S: utf8string;
   b: Boolean;
 begin
   if FProcess.Output <> nil then
   begin
     try
-      aWrapper := TmnWrapperStream.Create(FProcess.Output, False);
-      aWrapper.EndOfLine := #10;
-
       while not Terminated do
       begin
-        b := aWrapper.ReadLine(S, False);
+          b := StreamWrapper.ReadLineUTF8(S, False);
         if not b and not (FProcess.Running) then
           break;
         Log(S);
       end;
-    aWrapper.Free;
-  except
-    on e: Exception do
-    begin
-      if FProcess.Running and Terminated then
-        FProcess.Terminate(0);
+    except
+      on e: Exception do
+      begin
+        if FProcess.Running and Terminated then
+          FProcess.Terminate(0);
+      end;
     end;
-  end;
   end;
 end;
 
 procedure TmnConsoleThread.Execute;
-var
-  d: Int64;
-
   procedure StreamWriteLn(S: string);
   var
     i : integer;
@@ -217,7 +209,6 @@ begin
   FProcess.StartupOptions := [suoUseShowWindow]; //<- need it in linux to show window
 
   Status := 0;
-  d := GetTickCount64;
   try
     try
       if FExecuteObject <> nil then
@@ -225,9 +216,14 @@ begin
       Log(Message, lgStatus);
       Log(FProcess.Executable + ' ' + StringReplace(FProcess.Parameters.Text, #13#10, ' ', [rfReplaceAll]));
       FProcess.Execute;
+      StreamWrapper := TmnWrapperStream.Create(FProcess.Output, False);
+      StreamWrapper.EndOfLine := #10;
       ReadPrompt;
       if FProcess.Running and (FProcess.Input <> nil) and (Password <> '') then
+      begin
         StreamWriteLn(Password);
+//        StreamWriteLn(Password);
+      end;
       FProcess.CloseInput;
       if FProcess.Running then
         ReadStream;
@@ -235,6 +231,7 @@ begin
       FreeAndNil(FProcess);
       if (IgnoreError or (Status = 0)) and (FExecuteObject <> nil) then
         FExecuteObject.Execute(Self);
+
     except
       on E: Exception do
       begin
@@ -250,6 +247,7 @@ begin
   if FProcess <> nil then
   begin
     FProcess.WaitOnExit;
+    FreeAndNil(StreamWrapper);
     FreeAndNil(FProcess);
   end;
 end;

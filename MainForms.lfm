@@ -6,9 +6,9 @@ object MainForm: TMainForm
   Caption = 'PG Server'
   ClientHeight = 343
   ClientWidth = 671
+  LCLVersion = '3.99.0.0'
   OnClose = FormClose
   OnWindowStateChange = FormWindowStateChange
-  LCLVersion = '2.3.0.0'
   inline LogEdit: TSynEdit
     Left = 0
     Height = 280

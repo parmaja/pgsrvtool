@@ -250,7 +250,7 @@ begin
   ShowApp;
 end;
 
-procedure GetIcon(ImageList: TCustomImageList; Index: Integer; aImage: TIcon; AllResolutions: Boolean);
+procedure GetIcon(ImageList: TCustomImageList; Index: Integer; aImage: TIcon);
 var
   i: Integer;
   aResolution: TCustomImageListResolution;
@@ -274,6 +274,9 @@ begin
   begin
     ImageList.GetIcon(0, TrayIcon.Icon);
     ImageList.GetIcon(0, Icon);
+    ImageList.GetIcon(0, Application.Icon);
+    //Icon.LoadFromFile(Application.Location + 'pgserver.ico');
+    //Application.Icon.LoadFromFile(Application.Location + 'pgserver.ico');
     StartAct.Enabled := False;
     StopAct.Enabled := True;
   end
@@ -281,10 +284,10 @@ begin
   begin
     ImageList.GetIcon(1, TrayIcon.Icon);
     ImageList.GetIcon(1, Icon);
+    ImageList.GetIcon(1, Application.Icon);
     StartAct.Enabled := True;
     //StopAct.Enabled := False; //no, maybe we need to force stop
   end;
-  //Application.Icon.Assign(TrayIcon.Icon);
 end;
 
 procedure TMainForm.Launch(AddIt: Boolean; vMessage, vExecutable, vParameters, vPassword: String; vExecuteObject: TExecuteObject; IgnoreError: Boolean; WaitIt: Boolean);
@@ -442,16 +445,27 @@ end;
 procedure TMainForm.InitDataActExecute(Sender: TObject);
 var
   cmd: String;
-  aPath: string;
+  aPassword, aPath: string;
+  //C:\programs\pg17-64\bin\initdb -D D:\data\pg17 -U postgres --encoding=UTF8 -W --no-locale --auth-host=md5
 begin
   aPath := DataPath;
-  if Password = '' then
-    MsgBox.Password(Password, 'Enter postgre password');
-  if (Password <> '') and SelectDirectory(aPath, [sdAllowCreate, sdPerformCreate, sdPrompt], 0) then
+  //if SelectDirectory(aPath, [sdAllowCreate, sdPerformCreate, sdPrompt], 0) then
   begin
+    if Password = '' then
+      MsgBox.Password(Password, 'Enter postgre password');
     ForceDirectories(aPath);
-    cmd := ' -D "' + aPath + '" -U ' + UserName + ' -W --encoding=UTF8';
-    Launch(true, 'Init database folder', 'initdb', cmd, Password); //TODO twice of password
+    cmd := ' -D "' + aPath + '" --encoding=UTF8 --no-locale --auth-host=md5';
+    if Password <> ''  then
+    begin
+      cmd := cmd+ ' --username=' + UserName + ' --pwprompt';
+      aPassword := Password;
+    end
+    else
+    begin
+      cmd := cmd+ ' --username=' + UserName;
+      aPassword := '';
+    end;
+    Launch(true, 'Init database folder', 'initdb', cmd, aPassword); //TODO twice of password
 {
     cmd := '"pg_ctl.exe initdb -D ''' + aPath + ''' -w -U ' + UserName + ' -P ' + Password + ' --encoding=UTF8"';
     Launch(true, 'Init database folder', 'runas /user:' + UserName, cmd, password);
@@ -464,7 +478,7 @@ procedure TMainForm.ForceForegroundWindow;
 var
   aForeThread, aAppThread: DWORD;
   aProcessID: DWORD;
-  {$endif}
+{$endif}
 begin
   ShowApp;
   {$ifdef windows}

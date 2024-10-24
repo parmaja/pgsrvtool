@@ -170,7 +170,7 @@ begin
     try
       while not Terminated do
       begin
-          b := StreamWrapper.ReadLineUTF8(S, False);
+        b := StreamWrapper.ReadUTF8Line(S, False);
         if not b and not (FProcess.Running) then
           break;
         Log(S);
@@ -207,6 +207,7 @@ begin
   FProcess.InheritHandles := True;
   FProcess.CurrentDirectory := Application.Location;
   FProcess.StartupOptions := [suoUseShowWindow]; //<- need it in linux to show window
+  //FProcess.Environment.Add('PGPASSWORD=sss');
 
   Status := 0;
   try

@@ -32,6 +32,7 @@ type
 
   TmnConsoleThread = class(TThread)
   private
+    FEnvironment: TStrings;
     FExecutable: string;
     FCurrentDirectory: string;
     FParameters: string;
@@ -58,6 +59,7 @@ type
     procedure Log(S: String; Kind: TmnLogKind = lgLog);
     property OnLog: TmnOnLog read FOnLog write FOnLog;
     property Password: string read FPassword write FPassword;
+    property Environment: TStrings read FEnvironment;
     property ExecuteObject: TExecuteObject read FExecuteObject write SetExecuteObject;
   end;
 
@@ -96,6 +98,7 @@ begin
   inherited Create(True);
   FreeOnTerminate := True;
   FOnLog := vOnLog;
+  FEnvironment := TStringList.Create();
   FExecutable:= vExecutable;
   FCurrentDirectory := vCurrentDirectory;
   FParameters := vParameters;
@@ -104,6 +107,7 @@ end;
 destructor TmnConsoleThread.Destroy;
 begin
   FreeAndNil(FExecuteObject);
+  FreeAndNil(FEnvironment);
   inherited Destroy;
 end;
 
@@ -195,7 +199,8 @@ procedure TmnConsoleThread.Execute;
     FProcess.Input.WriteByte(13);
     FProcess.Input.WriteByte(10);
   end;
-
+var
+  i: Integer;
 begin
   FProcess := TProcess.Create(nil);
   FProcess.CurrentDirectory := FCurrentDirectory;
@@ -206,8 +211,17 @@ begin
   FProcess.ConsoleTitle := 'Console';
   FProcess.InheritHandles := True;
   FProcess.CurrentDirectory := Application.Location;
-  FProcess.StartupOptions := [suoUseShowWindow]; //<- need it in linux to show window
-  //FProcess.Environment.Add('PGPASSWORD=sss');
+  FProcess.StartupOptions := [suoUseShowWindow]; //<- need it in linux to hide window
+  if (Environment.Count > 0) then //if there is one, we need to copy system environments
+  begin
+    for i := 0 to GetEnvironmentVariableCount -1 do
+       FProcess.Environment.Add(GetEnvironmentString(i));
+    FProcess.Environment.AddStrings(Environment);
+    // Examples
+    //ConsoleThread.Environment.Add('PGPASSWORD=sss');
+    //ConsoleThread.Environment.Add('LANG=ru_RU.UTF-8');
+    //ConsoleThread.Environment.Add('PYTHONIOENCODING=utf-8');
+  end;
 
   Status := 0;
   try

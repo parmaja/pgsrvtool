@@ -294,7 +294,8 @@ procedure TMainForm.Launch(AddIt: Boolean; vMessage, vExecutable, vParameters, v
 var
   aConsoleThread: TmnConsoleThread;
 begin
-  vExecutable := IncludeTrailingPathDelimiter(PGPath) + vExecutable;
+  if vExecutable <> 'python' then
+    vExecutable := IncludeTrailingPathDelimiter(PGPath) + vExecutable;
   aConsoleThread := TmnConsoleThread.Create(vExecutable, PGPath, vParameters, @Log);
   if WaitIt then
     aConsoleThread.FreeOnTerminate := False
@@ -304,6 +305,8 @@ begin
   aConsoleThread.Message := vMessage;
   aConsoleThread.ExecuteObject := vExecuteObject;
   aConsoleThread.IgnoreError := IgnoreError;
+  //aConsoleThread.Environment.Add('LANG=ru_RU.UTF-8');
+  //aConsoleThread.Environment.Add('PYTHONIOENCODING=utf-8');
 
   if AddIt then
   begin
@@ -394,6 +397,7 @@ begin
   //runservice
   cmd := '-D "' + DataPath + '" -w status';
   Launch(False, 'Checking Server:', 'pg_ctl.exe', cmd, Password);
+  //Launch(False, 'Checking Server:', 'python', 'c:\temp\test_rus.py', ''); for testing
 end;
 
 procedure TMainForm.ApplicationPropertiesEndSession(Sender: TObject);

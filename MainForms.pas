@@ -103,7 +103,7 @@ type
   protected
     procedure DoShow; override;
   public
-    ConsoleThread: TmnConsoleThread;
+    CurrentConsoleThread: TmnConsoleThread;
     destructor Destroy; override;
     constructor Create(TheOwner: TComponent); override;
   end;
@@ -191,22 +191,22 @@ begin
   cmd := '-s -D "' + DataPath + '" -w stop';
   Launch(False, 'Stopping server', 'pg_ctl.exe', cmd, Password, nil, false, WaitIt);
 
-  if (ConsoleThread <> nil) then
+  if (CurrentConsoleThread <> nil) then
   begin
     if WaitIt then
     begin
-      ConsoleThread.FreeOnTerminate := False;
-      ConsoleThread.OnTerminate := nil;
+      CurrentConsoleThread.FreeOnTerminate := False;
+      CurrentConsoleThread.OnTerminate := nil;
     end;
 
-    if ConsoleThread <> nil then
+    if CurrentConsoleThread <> nil then
     begin
-      ConsoleThread.Terminate;
+      CurrentConsoleThread.Terminate;
 
       if WaitIt then
       begin
-        ConsoleThread.WaitFor;
-        FreeAndNil(ConsoleThread);
+        CurrentConsoleThread.WaitFor;
+        FreeAndNil(CurrentConsoleThread);
       end;
     end;
   end;
@@ -270,7 +270,7 @@ end;
 
 procedure TMainForm.CheckServer;
 begin
-  if ConsoleThread <> nil then
+  if CurrentConsoleThread <> nil then
   begin
     ImageList.GetIcon(0, TrayIcon.Icon);
     ImageList.GetIcon(0, Icon);
@@ -310,9 +310,9 @@ begin
 
   if AddIt then
   begin
-    if (ConsoleThread <> nil) then
+    if (CurrentConsoleThread <> nil) then
       raise Exception.Create('Running Process is already exists');
-    ConsoleThread := aConsoleThread;
+    CurrentConsoleThread := aConsoleThread;
   end;
 
   aConsoleThread.Start;
@@ -325,14 +325,14 @@ end;
 
 procedure TMainForm.ConsoleTerminated(Sender: TObject);
 begin
-  if ConsoleThread <> nil then
+  if CurrentConsoleThread <> nil then
   begin
-    {if ConsoleThread.Status = 0 then
-      Log(ConsoleThread.Message + ' Done', lgDone)
+    {if CurrentConsoleThread.Status = 0 then
+      Log(CurrentConsoleThread.Message + ' Done', lgDone)
     else
       Log('Error look the log', lgMessage);}
-    ConsoleThread := nil;
-    //FreeAndNil(ConsoleThread); //nop
+    CurrentConsoleThread := nil;
+    //FreeAndNil(CurrentConsoleThread); //nop
   end;
   if not FDestroying then
   begin
@@ -456,17 +456,20 @@ begin
   //if SelectDirectory(aPath, [sdAllowCreate, sdPerformCreate, sdPrompt], 0) then
   begin
     if Password = '' then
-      MsgBox.Password(Password, 'Enter postgre password');
+      if not MsgBox.Password(Password, 'Enter "postgres" password,'#13' or leave it empty for no user set') then
+        exit;
     ForceDirectories(aPath);
-    cmd := ' -D "' + aPath + '" --encoding=UTF8 --no-locale --auth-host=md5';
+    cmd := ' -D "' + aPath + '" --encoding=UTF8 --no-locale';
     if Password <> ''  then
     begin
+      cmd := cmd + ' --auth-host=md5';
       cmd := cmd+ ' --username=' + UserName + ' --pwprompt';
       aPassword := Password;
     end
     else
     begin
-      cmd := cmd+ ' --username=' + UserName;
+      cmd := cmd + ' --auth-host=trust';
+//      cmd := cmd+ ' --username=' + UserName;
       aPassword := '';
     end;
     Launch(true, 'Init database folder', 'initdb', cmd, aPassword); //TODO twice of password

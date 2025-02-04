@@ -22,7 +22,7 @@
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="4"/>
       <RevisionNr Value="1"/>
-      <BuildNr Value="28"/>
+      <BuildNr Value="29"/>
       <StringTable CompanyName="PARMAJA" FileDescription="PG GUI tool start and stop portable pg server" InternalName="PG Server GUI" LegalCopyright="MIT" ProductName="PG Server GUI"/>
     </VersionInfo>
     <BuildModes>

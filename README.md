@@ -21,8 +21,10 @@ Example of pgserver.ini
 
 ```
 [options]
-pgpath=\programs\pg13-64\bin
-datapath=\data\pg13
+pgpath=\programs\pg17-64\bin
+datapath=\data\pg17
+username=postgres
+#port=54321
 tray=true
 minimized=false
 start=false
@@ -32,7 +34,7 @@ start=false
 
 if you dont want to use this project, and want to install pg as server run this command once in admin privileges
 
-    pg_ctl.exe register -N "pg13" -U "NT AUTHORITY\NetworkService" -D "d:\data\pg13" -w
+    pg_ctl.exe register -N "pg17" -U "NT AUTHORITY\NetworkService" -D "d:\data\pg17" -w
 
 ## License
 

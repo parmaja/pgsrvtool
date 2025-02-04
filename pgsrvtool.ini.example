@@ -1,5 +1,7 @@
 [options]
 pgpath=
 datapath=
-minimized=true
+username=postgres
+#port=54321
 start=true
+minimized=true

@@ -452,31 +452,42 @@ var
   aPassword, aPath: string;
   //C:\programs\pg17-64\bin\initdb -D D:\data\pg17 -U postgres --encoding=UTF8 -W --no-locale --auth-host=md5
 begin
-  aPath := DataPath;
-  //if SelectDirectory(aPath, [sdAllowCreate, sdPerformCreate, sdPrompt], 0) then
-  begin
-    if Password = '' then
-      if not MsgBox.Password(Password, 'Enter "postgres" password,'#13' or leave it empty for no user set') then
-        exit;
-    ForceDirectories(aPath);
-    cmd := ' -D "' + aPath + '" --encoding=UTF8 --no-locale';
-    if Password <> ''  then
+  LoadIni;
+  {StartAct.Enabled := False;
+  StopAct.Enabled := False;
+  CheckAct.Enabled := False; }
+  try
+    aPath := DataPath;
+    //if SelectDirectory(aPath, [sdAllowCreate, sdPerformCreate, sdPrompt], 0) then
     begin
-      cmd := cmd + ' --auth-host=md5';
-      cmd := cmd+ ' --username=' + UserName + ' --pwprompt';
-      aPassword := Password;
-    end
-    else
-    begin
-      cmd := cmd + ' --auth-host=trust';
-//      cmd := cmd+ ' --username=' + UserName;
-      aPassword := '';
+      if Password = '' then
+        if not MsgBox.Password(Password, 'Enter "postgres" password,'#13' or leave it empty for no user set') then
+          exit;
+      ForceDirectories(aPath);
+      cmd := ' -D "' + aPath + '" --encoding=UTF8 --no-locale';
+      if Password <> ''  then
+      begin
+        cmd := cmd + ' --auth-host=md5';
+        cmd := cmd+ ' --username=' + UserName + ' --pwprompt';
+        aPassword := Password;
+      end
+      else
+      begin
+        cmd := cmd + ' --auth-host=trust';
+        if UserName<>'' then
+          cmd := cmd+ ' --username=' + UserName;
+        aPassword := '';
+      end;
+      Launch(true, 'Init database folder', 'initdb', cmd, aPassword); //TODO twice of password
+  {
+      cmd := '"pg_ctl.exe initdb -D ''' + aPath + ''' -w -U ' + UserName + ' -P ' + Password + ' --encoding=UTF8"';
+      Launch(true, 'Init database folder', 'runas /user:' + UserName, cmd, password);
+  }
     end;
-    Launch(true, 'Init database folder', 'initdb', cmd, aPassword); //TODO twice of password
-{
-    cmd := '"pg_ctl.exe initdb -D ''' + aPath + ''' -w -U ' + UserName + ' -P ' + Password + ' --encoding=UTF8"';
-    Launch(true, 'Init database folder', 'runas /user:' + UserName, cmd, password);
-}
+  finally
+    {StartAct.Enabled := True;
+    StopAct.Enabled := True;
+    CheckAct.Enabled := True;}
   end;
 end;
 
@@ -526,13 +537,17 @@ procedure TMainForm.StartActExecute(Sender: TObject);
 var
   cmd: String;
 begin
+  LoadIni;
   if (PGPath = '') or (DataPath = '') then
   begin
     Log('Paths is empty, please edit pgserver.ini');
     exit;
   end;
   //runservice
-  cmd := '-s -D "' + DataPath + '"';
+  cmd := '-s';
+  if (Port <> '') and (Port <> '5432') then
+    cmd := cmd + ' -o "-F -p '+Port+'"';
+  cmd := cmd + ' -D "' + DataPath + '"';
   //cmd := cmd + ' -l "' + DataPath + 'pgserver_log.log' + '"';
   cmd := cmd + ' -w';
   cmd := cmd + ' start';

@@ -98,7 +98,7 @@ type
     procedure ForceForegroundWindow;
     procedure Log(S: String; Kind: TmnLogKind = lgLog);
     procedure Launch(AddIt: Boolean; vMessage, vExecutable, vParameters, vPassword: String; vExecuteObject: TExecuteObject = nil; IgnoreError: Boolean = False; WaitIt: Boolean = False);
-    procedure LoadIni;
+    procedure LoadIni(WithUI: Boolean);
     procedure Stop(WaitIt: Boolean = False);
   protected
     procedure DoShow; override;
@@ -147,7 +147,7 @@ begin
     Result := '';
 end;
 
-procedure TMainForm.LoadIni;
+procedure TMainForm.LoadIni(WithUI: Boolean);
 var
   ini: TIniFile;
   f: string;
@@ -159,21 +159,25 @@ begin
     try
       ini.BoolFalseStrings := ['false', 'False', 'off'];
       ini.BoolTrueStrings := ['true', 'True', 'on'];
+
       UserName := ini.ReadString('options', 'username', 'postgres');
       Password := ini.ReadString('options', 'password', '');
       Port := ini.ReadString('options', 'port', '');
       PGPath := IncludePathDelimiter(ExpandFile(ini.ReadString('options', 'pgpath', '')));
       DataPath := IncludePathDelimiter(ExpandFile(ini.ReadString('options', 'DataPath', '')));
-      StartMinimized := ini.ReadBool('options', 'minimized', false);
-      AutoStart := ini.ReadBool('options', 'start', false);
-      ShowTray := ini.ReadBool('options', 'tray', true);
-      SetBounds(Left, Top, ini.ReadInteger('Size', 'Width', Width), ini.ReadInteger('Size', 'Height', Height));
+      if WithUI then
+      begin
+        StartMinimized := ini.ReadBool('options', 'minimized', false);
+        AutoStart := ini.ReadBool('options', 'start', false);
+        ShowTray := ini.ReadBool('options', 'tray', true);
+        SetBounds(Left, Top, ini.ReadInteger('Size', 'Width', Width), ini.ReadInteger('Size', 'Height', Height));
+      end;
+      Log('PGPath=' + PGPath);
+      Log('DataPath=' + DataPath);
+      Log('Info loaded');
     finally
       ini.Free;
     end;
-    Log('PGPath=' + PGPath);
-    Log('DataPath=' + DataPath);
-    Log('Info loaded');
   end;
 end;
 
@@ -235,7 +239,7 @@ begin
   inherited Create(TheOwner);
   IPCServer.ServerID := sApplicationID;
   IPCServer.StartServer;
-  LoadIni;
+  LoadIni(True);
   CheckServer;
   if StartMinimized then
     HideApp
@@ -452,7 +456,7 @@ var
   aPassword, aPath: string;
   //C:\programs\pg17-64\bin\initdb -D D:\data\pg17 -U postgres --encoding=UTF8 -W --no-locale --auth-host=md5
 begin
-  LoadIni;
+  LoadIni(False);
   {StartAct.Enabled := False;
   StopAct.Enabled := False;
   CheckAct.Enabled := False; }
@@ -464,7 +468,8 @@ begin
         if not MsgBox.Password(Password, 'Enter "postgres" password,'#13' or leave it empty for no user set') then
           exit;
       ForceDirectories(aPath);
-      cmd := ' -D "' + aPath + '" --encoding=UTF8 --no-locale';
+      cmd := ' -D "' + aPath + '" --encoding=UTF8 --no-locale'; // if windows username is arabic cause problem
+      //cmd := ' -D "' + aPath + '" --no-locale';
       if Password <> ''  then
       begin
         cmd := cmd + ' --auth-host=md5';
@@ -537,7 +542,7 @@ procedure TMainForm.StartActExecute(Sender: TObject);
 var
   cmd: String;
 begin
-  LoadIni;
+  LoadIni(False);
   if (PGPath = '') or (DataPath = '') then
   begin
     Log('Paths is empty, please edit pgserver.ini');
